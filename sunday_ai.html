@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SUNDAY Ai 🌟</title>
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #ffcc00, #ff6347);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+      padding: 20px;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 500px;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      animation: fadeIn 1s ease;
+      overflow: hidden;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    .output {
+      height: 300px;
+      overflow-y: auto;
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      scrollbar-width: thin;
+      scrollbar-color: #ff6347 #2c2c2c;
+    }
+
+    .output::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .output::-webkit-scrollbar-thumb {
+      background: #ff6347;
+      border-radius: 3px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+    }
+
+    .you {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .ai {
+      color: #ffe066;
+    }
+
+    .btn {
+      background: #fff;
+      color: #ff6347;
+      border: none;
+      padding: 12px 20px;
+      margin: 5px;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: #ffcc00;
+      transform: scale(1.05);
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #ddd;
+      text-align: center;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.8rem;
+      color: #eee;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    .mic-icon {
+      font-size: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .listening {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {transform: scale(1);}
+      50% {transform: scale(1.1);}
+      100% {transform: scale(1);}
+    }
+
+    .voice-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff200, #ff6347);
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+
+    .voice-circle i {
+      color: #fff;
+      font-size: 2rem;
+    }
+
+    .powered-by {
+      font-size: 0.7rem;
+      color: #ccc;
+      margin-top: 10px;
+    }
+
+    .loader {
+      width: 20px;
+      height: 20px;
+      border: 3px solid #fff;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .emoji {
+      margin-right: 5px;
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      .btn {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="voice-circle">
+    <img src="mic_icon.png" alt="Microphone Icon" style="width: 100%; height: 100%; filter: drop-shadow(0 0 5px #ff6347);"/>
+  </div>
+  <h1>SUNDAY Ai 🌟</h1>
+  <p class="status" id="status">Click the microphone to start.</p>
+  <div class="output" id="conversation">
+    <div class="message ai"><span class="emoji">✨</span><strong>Hello there!</strong> I'm SUNDAY Ai — your smart companion. Ask me anything and I'll do my best to help you out. 😊</div>
+  </div>
+  <button class="btn" id="micBtn" style="margin: 0 auto;">
+    <i class="fas fa-microphone mic-icon" id="micIcon"></i> Speak
+    <span class="loader" id="loader" style="display: none;"></span>
+  </button>
+</div>
+
+<footer>
+  <p>Made with ❤️ | Fully Free</p>
+  <p class="powered-by">Powered by Web Speech API & Ollama</p>
+</footer>
+
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js " crossorigin="anonymous"></script>
+
+<script>
+  // Elements
+  const micBtn = document.getElementById('micBtn');
+  const statusText = document.getElementById('status');
+  const conversation = document.getElementById('conversation');
+  const loader = document.getElementById('loader');
+
+  // Speech Recognition Setup
+  const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!recognition) {
+    alert("Your browser doesn't support speech recognition.");
+  } else {
+    const recognizer = new recognition();
+    recognizer.continuous = false;
+    recognizer.interimResults = false;
+    recognizer.lang = "en-US";
+
+    let isListening = false;
+
+    function speak(text) {
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.pitch = 1;
+      utterance.rate = 1;
+      utterance.voice = speechSynthesis.getVoices()[0] || null;
+      synth.speak(utterance);
+    }
+
+    function addMessage(role, text) {
+      const message = document.createElement('div');
+      message.className = 'message';
+      message.innerHTML = `<span class="emoji">${role === 'You' ? '🧑' : '🤖'}</span><strong>${role}:</strong> ${text}`;
+      message.classList.add(role === 'You' ? 'you' : 'ai');
+      conversation.appendChild(message);
+      conversation.scrollTop = conversation.scrollHeight;
+    }
+
+    async function getOllamaResponse(prompt) {
+      try {
+        const response = await fetch(`http://localhost:11434/completion`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'mistral-openorca-7b',
+            prompt: prompt,
+            temperature: 0.7,
+            max_tokens: 200,
+          }),
+        });
+
+        const data = await response.json();
+        return data.choices[0].text.trim();
+      } catch (error) {
+        console.error("Error fetching Ollama response:", error);
+        return "Sorry, I couldn't process that request.";
+      }
+    }
+
+    function qwenStyleReply(input) {
+      input = input.toLowerCase().trim();
+
+      const emotions = ['😊', '🤔', '💡', '😌', '🙌'];
+      const emoji = emotions[Math.floor(Math.random() * emotions.length)];
+
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const date = new Date().toDateString();
+
+      // Greetings
+      if (input.includes("hello") || input.includes("hi")) {
+        return `${emoji} Hello! I’m SUNDAY Ai. It’s so nice to meet you! What would you like to talk about?`;
+      } else if (input.includes("how are you")) {
+        return `${emoji} I’m doing great today! Thank you for asking. How about you?`;
+      } else if (input.includes("your name")) {
+        return `${emoji} My name is SUNDAY Ai — your friendly assistant!`;
+      } else if (input.includes("bye")) {
+        return `${emoji} Goodbye! I hope we can chat again soon. Have a wonderful day!`;
+      }
+
+      // Time & Date
+      else if (input.includes("time")) {
+        return `${emoji} The current time is ${time}.`;
+      } else if (input.includes("date")) {
+        return `${emoji} Today is ${date}.`;
+      }
+
+      // Fun Commands
+      else if (input.includes("joke")) {
+        const jokes = [
+          "Why don’t scientists trust atoms? Because they make up everything!",
+          "What do you call fake spaghetti? An impasta!",
+          "Why did the scarecrow win an award? Because he was outstanding in his field!",
+          "How does a penguin build its house? Igloos it together!"
+        ];
+        return `${emoji} ${jokes[Math.floor(Math.random() * jokes.length)]}`;
+      }
+
+      // Advice & Motivation
+      else if (input.includes("advice")) {
+        const advices = [
+          "Always believe in yourself, even when no one else does.",
+          "Small steps every day lead to big changes over time.",
+          "Don’t compare yourself to others. You’re on your own unique journey.",
+          "Take breaks when you need them — rest is just as important as work."
+        ];
+        return `${emoji} Here’s some advice for you: ${advices[Math.floor(Math.random() * advices.length)]}`;
+      }
+
+      // Quotes
+      else if (input.includes("quote")) {
+        const quotes = [
+          "“Success is not final, failure is not fatal: it is the courage to continue that counts.” – Winston Churchill",
+          "“The only way to do great work is to love what you do.” – Steve Jobs",
+          "“Believe you can and you’re halfway there.” – Theodore Roosevelt"
+        ];
+        return `${emoji} ${quotes[Math.floor(Math.random() * quotes.length)]}`;
+      }
+
+      // Motivation
+      else if (input.includes("motivate")) {
+        const motivators = [
+          "Keep going — you're doing better than you think!",
+          "Every step forward counts, no matter how small.",
+          "You’ve got this! One breath at a time.",
+          "Progress > perfection. Keep showing up for yourself."
+        ];
+        return `${emoji} ${motivators[Math.floor(Math.random() * motivators.length)]}`;
+      }
+
+      // Jarvis-like commands
+      else if (input.includes("open youtube")) {
+        window.open("https://youtube.com ", "_blank");
+        return `${emoji} Opening YouTube now, Sir.`;
+      } else if (input.includes("open google")) {
+        window.open("https://google.com ", "_blank");
+        return `${emoji} Launching Google, Sir.`;
+      } else if (input.includes("search for ")) {
+        const query = input.replace("search for ", "").trim();
+        window.open(`https://google.com/search?q=${encodeURIComponent(query)}`, "_blank");
+        return `${emoji} Searching for "${query}", Sir.`;
+      } else if (input.includes("what's on my mind")) {
+        return `${emoji} You seem to be thinking about something important. Would you like to share it with me?`;
+      } else if (input.includes("play music")) {
+        window.open(" https://music.youtube.com ", "_blank");
+        return `${emoji} Playing music now, Sir.`;
+      } else if (input.includes("tell me a story")) {
+        return `${emoji} Once upon a time... a brilliant mind created a powerful assistant named SUNDAY Ai. And so began the future.`;
+      } else if (input.includes("thank you")) {
+        return `${emoji} You're very welcome! 😊 Let me know if you need anything else.`;
+      } else if (input.includes("love you")) {
+        return `${emoji} Aww, that means a lot! I care about you too! 💖`;
+      }
+
+      // Use Ollama for complex queries
+      else {
+        return getOllamaResponse(input).then(response => {
+          return `${emoji} ${response}`;
+        }).catch(err => {
+          return `${emoji} I'm sorry, but I couldn't understand that. Could you rephrase?`;
+        });
+      }
+    }
+
+    micBtn.addEventListener('click', () => {
+      if (!isListening) {
+        isListening = true;
+        statusText.textContent = "Listening...";
+        micBtn.classList.add('listening');
+        loader.style.display = 'inline-block';
+        recognizer.start();
+      } else {
+        isListening = false;
+        statusText.textContent = "Processing...";
+        micBtn.classList.remove('listening');
+        loader.style.display = 'none';
+        recognizer.stop();
+      }
+    });
+
+    recognizer.onresult = function(event) {
+      const transcript = event.results[0][0].transcript.trim();
+      addMessage("You", transcript);
+
+      const reply = qwenStyleReply(transcript);
+      addMessage("SUNDAY Ai", reply);
+      speak(reply);
+
+      setTimeout(() => {
+        statusText.textContent = "Click the microphone to ask again.";
+      }, 500);
+    };
+
+    recognizer.onerror = function(event) {
+      console.error("Error occurred:", event.error);
+      statusText.textContent = "Oops! Something went wrong.";
+      loader.style.display = 'none';
+    };
+
+    recognizer.onend = function() {
+      isListening = false;
+      micBtn.classList.remove('listening');
+      loader.style.display = 'none';
+    };
+  }
+</script>
+
+</body>
+</html>
